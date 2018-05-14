@@ -1,0 +1,7 @@
+h1 {
+    padding: 10px;
+}
+canvas {
+    border: solid 5px #d3d3d3;
+    background-color: #f1f1f1;
+}
