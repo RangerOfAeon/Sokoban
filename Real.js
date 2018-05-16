@@ -24,6 +24,13 @@ var Soko = {
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.interval = setInterval(updateSoko, 20);
 
+        window.addEventListener('keydown', function (e) {
+            Soko.key = e.keyCode;
+        })
+        window.addEventListener('keyup', function (e) {
+            Soko.key = false;
+        })
+
 
         for (index = 0; index < mapsArray[currentMap].mapGrid.length; index++) {
             for (index2 = 0; index2 < mapsArray[currentMap].mapGrid[index].length; index2++) {
@@ -78,6 +85,8 @@ class PlayerBlock {
     constructor(width, height, color, x, y, type) {
         this.width = width;
         this.height = height;
+        this.speedX = 0;
+        this.speedY = 0;
         this.color = color;
         this.x = x;
         this.y = y;
@@ -87,7 +96,15 @@ class PlayerBlock {
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         };
+        this.newPosition = function () {
+            this.x += this.speedX;
+            this.y += this.speedY;
+        }
 }
+}
+function stopMove() {
+    player.speedX = 0;
+    player.speedY = 0;
 }
 //function component(width, height, color, x, y) {
 //    this.width = 30;
@@ -100,6 +117,9 @@ class PlayerBlock {
 //        ctx.fillRect(this.x, this.y, this.color, this.width, this.height);
 //    };
 //}
+//function wait() {
+//    window.setTimeout(newPosition, 500);
+//}
 function updateSoko() {
     Soko.clear();
     for (i = 0; i < block.length; i++) {
@@ -108,6 +128,18 @@ function updateSoko() {
     for (i = 0; i < goal.length; i++) {
         goal[i].update();
     }
+    player.speedX = 0;
+    player.speedY = 0;
+    if (Soko.key && Soko.key == 37) { player.speedX = -30; }
+    if (Soko.key && Soko.key == 39) { player.speedX = 30; }
+    if (Soko.key && Soko.key == 38) { player.speedY = -30;  }
+    if (Soko.key && Soko.key == 40) { player.speedY = 30; }
+    //player.speedX = 0;
+    //player.speedY = 0;
+    
+    player.newPosition();
+    
     player.update();
+    //wait();
     //gameWall.update();
 }
