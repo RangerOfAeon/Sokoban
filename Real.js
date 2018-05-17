@@ -4,6 +4,11 @@ var block = [];
 var goal = [];
 var player;
 
+var collideLeft = false;
+var collideRight = false;
+var collideUp = false;
+var collideDown = false;
+
 var goalBlocks = 0;
 
 var ctx;
@@ -11,7 +16,6 @@ var currentMap = 0;
 
 function startGame() {
     Soko.start();
-    console.log("bla");
 }
 
 var Soko = {
@@ -22,14 +26,15 @@ var Soko = {
         this.canvas.width = mapsArray[currentMap].mapGrid[0].length * 30;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.interval = setInterval(updateSoko, 20);
+        this.interval = setInterval(updateSoko, 150);
+       
 
         window.addEventListener('keydown', function (e) {
             Soko.key = e.keyCode;
-        })
+        });
         window.addEventListener('keyup', function (e) {
             Soko.key = false;
-        })
+        });
 
 
         for (index = 0; index < mapsArray[currentMap].mapGrid.length; index++) {
@@ -37,20 +42,20 @@ var Soko = {
                 switch (mapsArray[currentMap].mapGrid[index][index2].toString()) {
                     case "W":
                         block.push(new Blocks(30, 30, "green", index2 * 30, index * 30, index2, index, "wall"));
-                        console.log("1");
+                        //console.log("1");
                         break;
                     case "G":
                         goal.push(new Blocks(30, 30, "orange", index2 * 30, index * 30, index2, index, "goal"));
                         goalBlocks += 1;
-                        console.log("2");
+                        //console.log("2");
                         break;
                     case "B":
                         block.push(new Blocks(30, 30, "blue", index2 * 30, index * 30, index2, index, "block"));
-                        console.log("3");
+                        //console.log("3");
                         break;
                     case "P":
-                        player = new PlayerBlock(30, 30, "red", index2 * 30, index * 30, "player");
-                        console.log("4");
+                        player = new PlayerBlock(30, 30, "red", index2 * 30, index * 30, index2, index, "player");
+                        //console.log("4");
                         break;
                     default:
                         break;
@@ -72,17 +77,19 @@ class Blocks {
     this.y = y;
     this.positionX = indexX;
     this.positionY = indexY;
-    this.type = type;
+        this.type = type;
+        console.log(this.positionX);
+        console.log(this.positionY);
     this.update = function () {
         ctx = Soko.context;
         ctx.fillStyle = color;
-        //ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.fillRect(this.x, this.y, this.width, this.height);
-    };
+        };
+    
     }
 }
 class PlayerBlock {
-    constructor(width, height, color, x, y, type) {
+    constructor(width, height, color, x, y, indexX, indexY, type) {
         this.width = width;
         this.height = height;
         this.speedX = 0;
@@ -90,36 +97,83 @@ class PlayerBlock {
         this.color = color;
         this.x = x;
         this.y = y;
+        this.myPositionX = indexX;
+        this.myPositionY = indexY;
+        this.futurePositionUp = this.myPositionY -= 1;
+        this.futurePositionDown = this.myPositionY += 1;
+        this.futurePositionLeft = this.myPositionX -= 1;
+        this.futurePositionRight = this.myPositionX += 1;
+       
         this.type = type;
         this.update = function () {
             ctx = Soko.context;
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         };
+        this.collide = function () {
+            for (var i = 0; i < block.length; i++) {
+                if (block[i].type != "goal") {
+                    if ((this.myPositionY - 1) == block[i].positionY && this.myPositionX == block[i].positionX) {
+                        collideUp = true;
+                        console.log("yes");
+                    }
+                    if ((this.myPositionY + 1) == block[i].positionY && this.myPositionX == block[i].positionX) {
+                        collideDown = true;
+                        console.log("yes");
+                    }
+                    if ((this.myPositionX - 1) == block[i].positionX && this.myPositionY == block[i].positionY) {
+                        collideLeft = true;
+                        console.log("yes");
+                    }
+                    if ((this.myPositionX + 1) == block[i].positionX && this.myPositionY == block[i].positionY) {
+                        collideRight = true;
+                        console.log("yes");
+                    }
+                }
+            }
+        };
+
         this.newPosition = function () {
-            this.x += this.speedX;
-            this.y += this.speedY;
-        }
+           
+            if (Soko.key && Soko.key == 37 && collideLeft == false) {
+                player.speedX = -30;
+                player.myPositionX--;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                console.log(player.myPositionX)
+                console.log(player.myPositionY)
+            }
+            if (Soko.key && Soko.key == 39 && collideRight == false) {
+                player.speedX = 30;
+                player.myPositionX++;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                console.log(player.myPositionX)
+                console.log(player.myPositionY)
+            }
+            if (Soko.key && Soko.key == 38 && collideUp == false) {
+                player.speedY = -30;
+                player.myPositionY--;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                console.log(player.myPositionX);
+                console.log(player.myPositionY);
+            }
+            if (Soko.key && Soko.key == 40 && collideDown == false) {
+                player.speedY = 30;
+                player.myPositionY++;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                console.log(player.myPositionX)
+                console.log(player.myPositionY)
+            }
+        };
 }
 }
 function stopMove() {
     player.speedX = 0;
     player.speedY = 0;
 }
-//function component(width, height, color, x, y) {
-//    this.width = 30;
-//    this.height = 30;
-//    this.color = color;
-//    this.x = x;
-//    this.update = function () {
-//        ctx = Soko.context;
-//        ctx.fillSyle = color;
-//        ctx.fillRect(this.x, this.y, this.color, this.width, this.height);
-//    };
-//}
-//function wait() {
-//    window.setTimeout(newPosition, 500);
-//}
 function updateSoko() {
     Soko.clear();
     for (i = 0; i < block.length; i++) {
@@ -130,16 +184,25 @@ function updateSoko() {
     }
     player.speedX = 0;
     player.speedY = 0;
-    if (Soko.key && Soko.key == 37) { player.speedX = -30; }
-    if (Soko.key && Soko.key == 39) { player.speedX = 30; }
-    if (Soko.key && Soko.key == 38) { player.speedY = -30;  }
-    if (Soko.key && Soko.key == 40) { player.speedY = 30; }
-    //player.speedX = 0;
-    //player.speedY = 0;
-    
+   
+    if (Soko.key && Soko.key == 37 && collideLeft == false) { player.speedX = -30; /*console.log(player.myPositionX);*/ }
+    if (Soko.key && Soko.key == 39 && collideRight == false) { player.speedX = 30; /*console.log(player.myPositionX);*/ }
+    //if (Soko.key && Soko.key == 38 && collideUp == true) { player.speedY = -30; /*console.log(player.myPositionY);*/ }
+    if (Soko.key && Soko.key == 40 && collideDown == false) { player.speedY = 30; /*console.log(player.myPositionY);*/ }
+    //else {
+    //    player.myPositionY = player.myPositionY;
+    //    player.speedY = 0;
+    //}
+    player.collide();
     player.newPosition();
-    
     player.update();
-    //wait();
-    //gameWall.update();
+
+    collideLeft = false;
+    collideRight = false;
+    collideUp = false;
+    collideDown = false;
+
+    //console.log(player.myPositionX);
+    //console.log(player.myPositionY);
+   
 }
