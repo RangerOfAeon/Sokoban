@@ -93,6 +93,13 @@ class Blocks {
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         };
+        this.blockMove = function () {
+            if (this.type == "block") {
+                if (this.positionX == player.myPositionX == this.positionY == player.myPositionY) {
+
+                }
+            }
+        }
         this.BlockCollide = function() {
             for (var i = 0; i < block.length; i++) {
                 var myX = this.positionX;
