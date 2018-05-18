@@ -4,6 +4,9 @@ var block = [];
 var goal = [];
 var player;
 
+var stopX = 0;
+var stopY = 0;
+
 var collideLeft = false;
 var collideRight = false;
 var collideUp = false;
@@ -16,6 +19,7 @@ var currentMap = 0;
 
 function startGame() {
     Soko.start();
+    console.log(goalBlocks);
 }
 
 var Soko = {
@@ -66,6 +70,9 @@ var Soko = {
     },
     clear: function () {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    end: function () {
+        clearInterval(this.interval);
     }
 };
 class Blocks {
@@ -78,13 +85,38 @@ class Blocks {
         this.positionX = indexX;
         this.positionY = indexY;
         this.type = type;
-        console.log(this.positionX);
-        console.log(this.positionY);
+        //console.log(this.positionX);
+        //console.log(this.positionY);
         this.update = function () {
+            this.BlockCollide();
             ctx = Soko.context;
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         };
+        this.BlockCollide = function() {
+            for (var i = 0; i < block.length; i++) {
+                var myX = this.positionX;
+                var myY = this.positionY;
+                var otherX = block[i].positionX;
+                var otherY = block[i].positionY;
+
+                if (block[i].type != "goal") {
+                    if (otherX == myX - 1 && otherY == myY) {
+                        this.collideLeft = true;
+                    }
+                    if (otherX == myX + 1 && otherY == myY) {
+                        this.collideRight = true;
+                    }
+                    if (otherY == myY - 1 && otherX == myX) {
+                        this.collideUp = true;
+                    }
+                    if (otherY == myY - 1 && otherX == myX) {
+                        this.collideDown = true;
+                    }
+                }
+            }
+        }
+
         //this.moveBlock = function () {
         //    for (var i = 0; i < block.length; i++) {
                 
@@ -105,8 +137,9 @@ class PlayerBlock {
         this.y = y;
         this.myPositionX = indexX;
         this.myPositionY = indexY;
-        this.formerX = indexX;
-        this.formerY = indexY;
+        this.formerX = this.myPositionX;
+        this.formerY = this.myPositionY;
+
         this.futurePositionUp = this.myPositionY -= 1;
         this.futurePositionDown = this.myPositionY += 1;
         this.futurePositionLeft = this.myPositionX -= 1;
@@ -114,92 +147,247 @@ class PlayerBlock {
 
         this.type = type;
         this.update = function () {
+            //if (stopX > 1) {
+            if (Soko.key && Soko.key == 37 && collideLeft == false) {
+                this.formerX = this.myPositionX;
+                player.formerY = player.myPositionY;
+                this.formerX++;
+                //this.formerX--;
+                console.log("Former" + player.formerX);
+                console.log("Former" + player.formerY);
+            }
+            if (Soko.key && Soko.key == 39 && collideRight == false) {
+                player.formerX = player.myPositionX;
+                player.formerY = player.myPositionY;
+                this.formerX--;
+                console.log("Former" + player.formerX);
+                console.log("Former" + player.formerY);
+            }
+            //}
+            //if (stopY > 1) {
+            if (Soko.key && Soko.key == 38 && collideUp == false) {
+                player.formerX = player.myPositionX;
+                player.formerY = player.myPositionY;
+                this.formerY++;
+                console.log("Former" + player.formerX);
+                console.log("Former" + player.formerY);
+            }
+            if (Soko.key && Soko.key == 40 && collideDown == false) {
+                player.formerX = player.myPositionX;
+                player.formerY = player.myPositionY;
+                this.formerY--;
+                console.log("Former" + player.formerX);
+                console.log("Former" + player.formerY);
+            }
+            //}
+            
             ctx = Soko.context;
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         };
+
+        //this.dontMove = function () {
+        //    for (var k = 0; i < block.length; k++) {
+        //        if (block[k].type != "goal") {
+        //            if ((block.positionY - 1) == block[k].positionY && (player.myPositionY - 2) == block[k].positionY && block.positionX == block[k].positionX) {
+        //                collideUp = true;
+        //            }
+        //        }
+        //    }
+        //}
+
+        //this.move = function () {
+        //    if (this.type == "block") {
+        //        if (this.myPositionY == block[i].positionY && this.myPositionX == block[i].positionX) {
+        //            if (this.formerY < block[i].positionY && this.myPositionX == block[i].positionX && collideUp == false) {
+        //                block.y - 30;
+        //                block.positionY - 1;
+        //                console.log("Yes");
+        //            }
+        //        }
+        //    }
+        //}
         this.collide = function () {
             for (var i = 0; i < block.length; i++) {
-                if (block[i].type == "wall") {
-                    if ((this.myPositionY - 1) == block[i].positionY && this.myPositionX == block[i].positionX) {
-                        collideUp = true;
-                        //console.log("yes");
-                    }
-                    if ((this.myPositionY + 1) == block[i].positionY && this.myPositionX == block[i].positionX) {
-                        collideDown = true;
-                        //console.log("yes");
-                    }
-                    if ((this.myPositionX - 1) == block[i].positionX && this.myPositionY == block[i].positionY) {
-                        collideLeft = true;
-                        //console.log("yes");
-                    }
-                    if ((this.myPositionX + 1) == block[i].positionX && this.myPositionY == block[i].positionY) {
-                        collideRight = true;
-                        //console.log("yes");
-                    }
-
-                }
+                //if (block[i].type != "goal") {
                 if (block[i].type == "block") {
-                    if (player.myPositionY == block[i].positionY && player.myPositionX == block[i].positionY) {
-                        //if (player.formerX < block[i].positionX) {
-                        //    this.x -= 30;
-                            console.log("No");
-                        //}
+                    if (block.myX == block.otherX && block.myY == block.otherY) {
+
+                        //if (block[i].type != "goal") {
+                        //    if ((block.positionY - 1) == block[i].positionY && (player.myPositionY - 2) == block[i].positionY && block.positionX == block[i].positionX) {
+                        //        collideUp = true;
+                        //    }
+                        //this.dontMove();
+                        if (this.formerY > block.otherY && this.myPositionX == block.otherX && collideUp == false && (this.myPositionY - 2) != block.otherY) {
+
+                            block.myY -= 30;
+                            block.myY -= 1;
+                            console.log("Up");
+                            //console.log(this.formerY);
+                            //collideUp = true;
+
+
+                        }
+                        if (block[i].type != "goal") {
+                            if ((block.positionY + 1) == block[i].positionY && block.positionX == block[i].positionX && block.positionY != (block[i].positionY - 1)) {
+                                collideDown = true;
+                                console.log("works")
+                            }
+                            if (this.formerY < block[i].positionY && this.myPositionX == block[i].positionX && collideDown == false) {
+                                block[i].y += 30;
+                                block[i].positionY += 1;
+                                console.log("Down");
+                                console.log(block.positionY)
+                                console.log(block.positionY)
+                                //console.log(this.formerY);
+                                //collideUp = true;
+                            }
+                        }
+
+                        if (block[i].type != "goal") {
+                            if ((block.positionX - 1) == block[i].positionX && block.positionY == block[i].positionY) {
+                                collideLeft = true;
+                            }
+                            if (this.formerX > block[i].positionX && this.myPositionY == block[i].positionY && collideLeft == false) {
+                                block[i].x -= 30;
+                                block[i].positionX -= 1;
+                                console.log("Left");
+                                //console.log(this.formerX);
+                                //collideUp = true;
+                            }
+                        }
+
+                        if (block[i].type != "goal") {
+                            if ((block.positionX + 1) == block[i].positionX && block.positionY == block[i].positionY) {
+                                collideRight = true;
+                            }
+                            if (this.formerX < block[i].positionX && this.myPositionY == block[i].positionY && collideRight == false) {
+                                block[i].x += 30;
+                                block[i].positionX += 1;
+                                console.log("Right");
+                                //console.log(this.formerX);
+                                //collideUp = true;
+                            }
+                        }
+
+
+
+
+
+
+                        if (block[i].type == "wall") {
+                            if ((this.myPositionY - 1) == block.otherY && this.myPositionX == block[i].positionX) {
+                                collideUp = true;
+                                //console.log("yes");
+                            }
+                            if ((this.myPositionY + 1) == block[i].positionY && this.myPositionX == block[i].positionX) {
+                                collideDown = true;
+                                //console.log("yes");
+                            }
+                            if ((this.myPositionX - 1) == block[i].positionX && this.myPositionY == block[i].positionY) {
+                                collideLeft = true;
+                                //console.log("yes");
+                            }
+                            if ((this.myPositionX + 1) == block[i].positionX && this.myPositionY == block[i].positionY) {
+                                collideRight = true;
+                                //console.log("yes");
+                            }
+                        }
+                       
                     }
-                }
-               
-            };
+                   
 
-            this.newPosition = function () {
+                }
+            }
+        }
+    
 
-                if (Soko.key && Soko.key == 37 && collideLeft == false) {
-                    player.speedX = -30;
-                    player.myPositionX--;
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    console.log(player.myPositionX)
-                    console.log(player.myPositionY)
-                }
-                if (Soko.key && Soko.key == 39 && collideRight == false) {
-                    player.speedX = 30;
-                    player.myPositionX++;
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    console.log(player.myPositionX)
-                    console.log(player.myPositionY)
-                }
-                if (Soko.key && Soko.key == 38 && collideUp == false) {
-                    player.speedY = -30;
-                    player.myPositionY--;
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    console.log(player.myPositionX);
-                    console.log(player.myPositionY);
-                }
-                if (Soko.key && Soko.key == 40 && collideDown == false) {
-                    player.speedY = 30;
-                    player.myPositionY++;
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    console.log(player.myPositionX)
-                    console.log(player.myPositionY)
-                }
-            };
+        this.newPosition = function () {
+
+            if (Soko.key && Soko.key == 37 && collideLeft == false) {
+                player.speedX = -30;
+                player.myPositionX--;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                console.log("My" + player.myPositionX)
+                console.log("My" + player.myPositionY)
+                stopX++;
+                //console.log(player.formerX)
+                //console.log(player.formerY)
+
+            }
+            if (Soko.key && Soko.key == 39 && collideRight == false) {
+                player.speedX = 30;
+                player.myPositionX++;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                console.log("My" + player.myPositionX)
+                console.log("My" + player.myPositionY)
+                stopX++;
+                //console.log(player.formerX)
+                //console.log(player.formerY)
+
+            }
+            if (Soko.key && Soko.key == 38 && collideUp == false) {
+                player.speedY = -30;
+                player.myPositionY--;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                console.log("My" + player.myPositionX);
+                console.log("My" + player.myPositionY);
+                stopY++;
+                //console.log(player.formerX)
+                //console.log(player.formerY)
+
+            }
+            if (Soko.key && Soko.key == 40 && collideDown == false) {
+                player.speedY = 30;
+                player.myPositionY++;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                console.log("My" + player.myPositionX)
+                console.log("My" + player.myPositionY)
+                stopY++;
+                //console.log(player.formerX)
+                //console.log(player.formerY)
+
+
+            }
+        };
+    
+    }
+}
+
+
+function EndSoko() {
+    for (j = 0; j < goal.length; j++) {
+        if (goal[j].positionX == block[i].positionX && goal[j].positionY == block[i].positionY) {
+            goalBlocks -= 1;
+            console.log(goalBlocks);
         }
     }
 }
-//function stopMove() {
-//    player.speedX = 0;
-//    player.speedY = 0;
+
 //}
 function updateSoko() {
     Soko.clear();
-    for (i = 0; i < block.length; i++) {
-        block[i].update();
-    }
+  
     for (i = 0; i < goal.length; i++) {
         goal[i].update();
     }
+    for (i = 0; i < block.length; i++) {
+        block[i].update();
+        if (block[i].type == "block") {
+            EndSoko(block[i]);
+        }
+    }
+        if (goalBlocks == 0) {
+            Soko.end();
+        }
+        else {
+            goalBlocks = 6;
+        }
+    
     player.speedX = 0;
     player.speedY = 0;
    
@@ -212,9 +400,11 @@ function updateSoko() {
     //    player.speedY = 0;
     //}
     player.collide();
+   
     player.newPosition();
     player.update();
-
+    
+  
     collideLeft = false;
     collideRight = false;
     collideUp = false;
